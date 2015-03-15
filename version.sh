@@ -40,7 +40,32 @@ case $1 in
 	echo 'Added a new file under versioning: ’'$file'’'
 	;;
     checkout) echo 'Not implemented';;
-    commit) echo 'Not implemented';;
+    commit)
+	cmp $2 $vfilelast 1>/dev/null 2>&1
+	filecmp=$?
+	if [ $filecmp -eq 0 ]
+	then
+	    echo '’'$file'’ is already the latest version, commit aborted'
+	    exit
+	else
+	    filenum=2
+	    continuer=1
+	    while [ $continuer -eq 1 ]
+	    do
+		if [ -f $vfile.$filenum ]
+		then
+		    filenum=$(( $filenum+1  ))
+		else
+		    patchname=$vfile.$filenum
+		    touch $patchname
+		    diff -u $vfilelast $2 > $patchname
+		    cp $2 $vfilelast
+		    echo 'Committed a new version:'$filenum
+		    continuer=0
+		fi
+	    done
+	fi
+	;;
     diff) echo 'Not implemented';;
     log) echo 'Not implemented';;
     revert) echo 'Not implemented';;
