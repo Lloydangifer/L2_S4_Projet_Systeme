@@ -32,7 +32,7 @@ case $1 in
     add)
 	if [ -f $vfilelast ]
 	then
-	    echo '’'$file'’ already under versioning'
+	    echo '’'$file'’ already under versioning.'
 	    exit
 	fi
 	cp $2 $vfile.1
@@ -41,11 +41,16 @@ case $1 in
 	;;
     checkout) echo 'Not implemented';;
     commit)
+	if [ ! -f $vfilelast ]
+	then
+	    echo '’'$file'’ not under versioning'
+	    exit
+	fi
 	cmp $2 $vfilelast 1>/dev/null 2>&1
 	filecmp=$?
 	if [ $filecmp -eq 0 ]
 	then
-	    echo '’'$file'’ is already the latest version, commit aborted'
+	    echo '’'$file'’ is already the latest version, commit aborted.'
 	    exit
 	else
 	    filenum=2
@@ -66,13 +71,42 @@ case $1 in
 	    done
 	fi
 	;;
-    diff) echo 'Not implemented';;
+    diff)
+	if [ ! -f $vfilelast ]
+	then
+	    echo '’'$file'’ not under versioning'
+	    exit
+	fi
+	cmp $2 $vfilelast 1>/dev/null 2>&1
+	filecmp=$?
+	if [ $filecmp -eq 0 ]
+	then
+	    echo '’'$file'’ is the latest version.'
+	    exit
+	fi
+	diff -u $2 $vfilelast
+	;;
     log) echo 'Not implemented';;
-    revert) echo 'Not implemented';;
+    revert)
+	if [ ! -f $vfilelast ]
+	then
+	    echo '’'$file'’ not under versioning'
+	    exit
+	fi
+	cmp $2 $vfilelast 1>/dev/null 2>&1
+	filecmp=$?
+	if [ $filecmp -eq 0 ]
+	then
+	    echo '’'$file'’ is already the latest version.'
+	    exit
+	fi
+	cp $vfilelast $2
+	echo 'Reverted to the latest version.'
+	;;
     rm)	
 	if [ ! -f $vfilelast ] 
 	then
-	    echo '’'$file'’ is not under versioning'
+	    echo '’'$file'’ is not under versioning.'
 	    exit
 	fi
 	echo 'Are you sure you want to delete ’'$file'’ from versioning ? (yes/no)'
@@ -88,10 +122,11 @@ case $1 in
 	    echo '’'$file'’ is not under versioning anymore.'
 	elif [ "$choice" = "no" ]
 	then
-	    echo '’'$file'’not deleted from versioning'
+	    echo '’'$file'’not deleted from versioning.'
 	else
-	    echo 'Not a valid choice'
+	    echo 'Not a valid choice.'
 	fi
 	;;
-    *) echo 'Error! This command name does not exist: ’'$1'’';;
+    *) echo 'Error! This command name does not exist: ’'$1'’'
+	;;
 esac
