@@ -3,7 +3,7 @@
 ########################################################
 #check if the parameters for the script are corrects
 ########################################################
-if [ $# -ne 2 ]
+if [ $# -lt 2 ]
 then
     echo 'Usage: version.sh <cmd> <file> [option]'
     echo 'where <cmd> can be: add checkout commit diff log revert rm'
@@ -39,8 +39,28 @@ case $1 in
 	cp $2 $vfilelast
 	echo 'Added a new file under versioning: ’'$file'’'
 	;;
-    checkout) echo 'Not implemented';;
-    commit)
+    checkout)
+	if [ $# -ne 3 ]
+	then
+	    echo 'Missing a third argument. Usage of command checkout:'
+	    echo 'version.sh checkout <file> number'
+	    echo 'where number is the number of the wished version'
+	    exit
+	fi
+	if [ ! -f $vfilelast ]
+	then
+	    echo '’'$file'’ not under versioning'
+	    exit
+	fi
+cp $vfile.1 $2
+vwished=$(seq 2 $3) #wished version
+for version in $vwished
+do
+    patch $2 $vfile.$version
+done
+echo 'Checked out version:'$3
+;;
+    ci)commit)
 	if [ ! -f $vfilelast ]
 	then
 	    echo '’'$file'’ not under versioning'
